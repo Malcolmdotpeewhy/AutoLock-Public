@@ -9,7 +9,7 @@ from PIL import Image
 from ..ui_shared import (
     CTkTooltip, make_panel, make_button, make_input, 
     apply_hover_brightness, lighten_color, 
-    get_color, get_font, parse_border, TOKENS
+    get_color, get_font, parse_border, TOKENS, ToastManager
 )
 from utils.logger import Logger
 
@@ -1277,6 +1277,10 @@ class RunePageBuilder(ctk.CTkFrame):
         self.selected_page_var.set(page["name"])
         self._set_status(f"Saved: {page['name']}")
 
+        tm = ToastManager.get_instance()
+        if tm:
+            tm.show_toast("Rune Page Saved", f"Successfully saved {page['name']}", type="success")
+
     def equip_to_client(self):
         if not self.lcu or not self.lcu.is_connected:
             self._set_status("Client Disconnected", True)
@@ -1301,8 +1305,18 @@ class RunePageBuilder(ctk.CTkFrame):
             res = self.lcu.request("POST", "/lol-perks/v1/pages", page_data)
             if res and res.status_code in [200, 204]:
                 self._set_status("Equipped Successfully!")
+                tm = ToastManager.get_instance()
+                if tm:
+                    tm.show_toast("Runes Equipped", f"Successfully pushed {page_data['name']} to client.", type="success")
+            else:
+                tm = ToastManager.get_instance()
+                if tm:
+                    tm.show_toast("Equip Failed", f"Failed to equip rune page. Is your client open?", type="error")
         except Exception as e:
             self._set_status(f"Error: {e}", True)
+            tm = ToastManager.get_instance()
+            if tm:
+                tm.show_toast("Equip Error", str(e), type="error")
 
     def _build_perk_list(self):
         perks = []

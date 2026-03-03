@@ -15,7 +15,7 @@ from ..ui_shared import (
     CTkTooltip, make_panel, make_button, make_input, 
     make_card, make_switch,
     apply_hover_brightness, lighten_color,
-    get_font, get_color, parse_border, TOKENS
+    get_font, get_color, parse_border, TOKENS, ToastManager
 )
 
 
@@ -1290,6 +1290,10 @@ class MainDashboard(ctk.CTkFrame):
                 updates[k] = getattr(self, f"var_{k}").get()
         if updates:
             self.config.set_batch(updates)
+
+            tm = ToastManager.get_instance()
+            if tm:
+                tm.show_toast("Settings Saved", "Your configuration updates have been saved.", type="success")
 
     def start_queue(self):
         """Start matchmaking queue."""
