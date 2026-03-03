@@ -29,7 +29,7 @@ from ui.components.factory import (
     get_color, get_font, TOKENS, make_panel, parse_border
 )
 from ui.components.color_utils import interpolate_color
-from ui.ui_shared import CTkTooltip
+from ui.ui_shared import CTkTooltip, ToastManager
 
 
 def is_admin():
@@ -111,6 +111,8 @@ class LeagueAgentApp(ctk.CTk):
         self._compact_hotkey = self.config.get("hotkey_compact_mode", "ctrl+shift+m")
 
         self.setup_ui()
+
+        self.toast_manager = ToastManager.get_instance(self)
 
         # Automation - Must happen AFTER setup_ui so status bar exists
         self.init_automation()

@@ -15,7 +15,7 @@ from utils.path_utils import resource_path
 from ..ui_shared import (
     CTkTooltip, make_panel, make_button, make_input, 
     apply_hover_brightness, lighten_color, 
-    get_color, get_font, TOKENS
+    get_color, get_font, TOKENS, ToastManager
 )
 
 
@@ -207,6 +207,10 @@ class ToolsTab(ctk.CTkFrame):
             if val:
                 self._set_config(key, val)
         self.lbl_launch_status.configure(text="Hotkeys saved! Restart app to apply.", text_color=get_color("colors.state.success"))
+
+        tm = ToastManager.get_instance()
+        if tm:
+            tm.show_toast("Hotkeys Saved", "Please restart the application to apply the new hotkeys.", type="success")
 
     # ──────── ASSET MANAGEMENT ────────
     def _build_asset_management(self):
