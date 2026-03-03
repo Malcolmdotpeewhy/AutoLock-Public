@@ -782,6 +782,10 @@ class LeagueAgentApp(ctk.CTk):
         self.bar_ram.pack(fill="x")
         self.bar_ram.set(0)
 
+        # Cache process for performance
+        if getattr(self, "_process", None) is None:
+            self._process = psutil.Process(os.getpid())
+
         # Start Monitor Loop
         self.after(1000, self._update_monitor)
 
@@ -793,7 +797,7 @@ class LeagueAgentApp(ctk.CTk):
         try:
             # System
             cpu = psutil.cpu_percent(interval=None)
-            mem = psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024
+            mem = self._process.memory_info().rss / 1024 / 1024
             
             self.lbl_cpu.configure(text=f"CPU: {int(cpu)}%")
             self.bar_cpu.set(cpu / 100)
