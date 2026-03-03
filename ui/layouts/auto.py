@@ -1562,6 +1562,21 @@ class ChampionSelector(ctk.CTkFrame):
         self.entry_search.pack(side="left", padx=(16, 10), pady=10)
         self.entry_search.bind("<KeyRelease>", self._on_search)
 
+        # 🔮 Malcolm's UX Enhancement: Predictive Hint
+        # Displays the top search match so users know what they are about to select.
+        # This reduces friction by clearly showing the outcome before confirming.
+        self.lbl_predictive_hint = ctk.CTkLabel(
+            self._bar,
+            text="",
+            font=get_font("body", "bold"),
+            text_color=get_color("colors.accent.gold")
+        )
+        self.lbl_predictive_hint.pack(side="left", padx=(10, 0))
+
+        # Bind Enter key to search entry
+        self.entry_search.bind("<Return>", self._on_enter)
+
+
         # Role filter buttons
         self._role_frame = ctk.CTkFrame(self._bar, fg_color="transparent")
         self._role_frame.pack(side="left", padx=(0, 10))
@@ -1613,7 +1628,17 @@ class ChampionSelector(ctk.CTkFrame):
         self.after(100, self._load)
         self.after(140, lambda: self.entry_search.focus_set())
 
+
+    def _on_enter(self, event=None):
+        # 🔮 Malcolm's UX Enhancement: Enter-to-Lock
+        # Allows power users to type a champion name and immediately lock it in
+        # using the Enter key without having to reach for the mouse.
+        if hasattr(self, "_first_champ_spec") and self._first_champ_spec:
+            # Execute the command of the first matching champion
+            self._first_champ_spec["cmd"]()
+
     # ── Role filter builder ──────────────────────────────────────────────────
+
 
     def _build_role_filters(self):
         roles = ["ALL", "TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"]
@@ -1689,26 +1714,26 @@ class ChampionSelector(ctk.CTkFrame):
         items = []
 
         # Special: NONE
-        items.append({
-            "text": "NONE", "icon": None, "compound": "center",
-            "cmd": lambda: self.on_select(None),
-            "fg": get_color("colors.state.danger"), "hover": "#c62828",
-            "tip": "Clear selection",
-        })
+        if not txt or "none" in txt:
+            items.append({
+                "text": "NONE", "icon": None, "compound": "center",
+                "cmd": lambda: self.on_select(None),
+                "fg": get_color("colors.state.danger"), "hover": "#c62828",
+                "tip": "Clear selection",
+            })
 
         # Special: Bravery
-        # Bravery icon is static/downloaded once, but for consistency we can also load it async or keep it sync if cached.
-        # Since it is just one icon, sync is acceptable, but let's make it consistent.
-        items.append({
-            "text": "Bravery",
-            "icon": None,
-            "champ_key": "Bravery",
-            "compound": "top",
-            "cmd": lambda: self.on_select("Bravery"),
-            "fg": get_color("colors.accent.blue"),
-            "hover": get_color("colors.accent.primary"),
-            "tip": "Random champion (Ultimate Bravery)",
-        })
+        if not txt or "brav" in txt:
+            items.append({
+                "text": "Bravery",
+                "icon": None,
+                "champ_key": "Bravery",
+                "compound": "top",
+                "cmd": lambda: self.on_select("Bravery"),
+                "fg": get_color("colors.accent.blue"),
+                "hover": get_color("colors.accent.primary"),
+                "tip": "Random champion (Ultimate Bravery)",
+            })
 
         if self.asset_manager.champ_data:
             champ_list = []
@@ -1726,10 +1751,9 @@ class ChampionSelector(ctk.CTkFrame):
 
             champ_list.sort(key=lambda x: sort_fn(x[0], x[1]))
 
+            first_champ_spec = None
             for champ_key, display_name in champ_list:
-                # OPTIMIZATION: Do not load icons synchronously here.
-                # Instead, pass the key and let _update_grid request it asynchronously.
-                items.append({
+                spec = {
                     "text": display_name,
                     "icon": None,  # Will be loaded async
                     "champ_key": champ_key,
@@ -1738,7 +1762,23 @@ class ChampionSelector(ctk.CTkFrame):
                     "fg": get_color("colors.background.card"),
                     "hover": get_color("colors.accent.primary"),
                     "tip": display_name,
-                })
+                }
+                items.append(spec)
+                if first_champ_spec is None:
+                    first_champ_spec = spec
+                    # Visually highlight the predictive hint match
+                    spec["border_width"] = 2
+                    spec["border_color"] = get_color("colors.accent.gold")
+
+            self._first_champ_spec = first_champ_spec
+
+            # Update hint
+            if txt and first_champ_spec:
+                self.lbl_predictive_hint.configure(text=f"↵  Press Enter to lock {first_champ_spec['text']}")
+            elif txt and not first_champ_spec:
+                self.lbl_predictive_hint.configure(text="No matches found.")
+            else:
+                self.lbl_predictive_hint.configure(text="")
 
         self._update_grid(items)
 
@@ -1793,12 +1833,14 @@ class ChampionSelector(ctk.CTkFrame):
 
             # Content
             btn.configure(
-                text=spec["text"],
-                image=spec["icon"],
-                compound=spec["compound"],
-                fg_color=spec["fg"],
-                hover_color=spec["hover"],
-                command=spec["cmd"]
+                text=spec.get("text", ""),
+                image=spec.get("icon", None),
+                compound=spec.get("compound", "center"),
+                fg_color=spec.get("fg", "transparent"),
+                hover_color=spec.get("hover", "gray"),
+                command=spec.get("cmd", lambda: None),
+                border_width=spec.get("border_width", 0),
+                border_color=spec.get("border_color", "transparent")
             )
 
             # Async Icon Loading
