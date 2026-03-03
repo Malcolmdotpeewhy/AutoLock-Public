@@ -9,6 +9,7 @@ import sys
 import threading
 import time
 import tkinter
+import re
 import traceback
 
 import customtkinter as ctk
@@ -731,8 +732,8 @@ class LeagueAgentApp(ctk.CTk):
                     return
 
                 # Malcolm: UX-enhanced Matchmaking Progress Flair
+
                 if msg.startswith("Auto Accept: Waiting"):
-                    import re
                     match = re.search(r"Waiting ([\d.]+)s", msg)
                     if match:
                         self._ready_total_time = float(match.group(1))
@@ -740,7 +741,6 @@ class LeagueAgentApp(ctk.CTk):
                         self.bar_action_progress.configure(progress_color=get_color("colors.accent.gold"))
                         self.bar_action_progress.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(0, TOKENS.get("spacing.sm")))
                 elif msg.startswith("Auto Accept:") and "s..." in msg and getattr(self, "_ready_total_time", None):
-                    import re
                     match = re.search(r"Auto Accept: (\d+)s", msg)
                     if match:
                         remaining = float(match.group(1))
@@ -751,9 +751,28 @@ class LeagueAgentApp(ctk.CTk):
                     self.bar_action_progress.configure(progress_color=get_color("colors.state.success"))
                     self.after(2000, lambda: self.bar_action_progress.pack_forget())
                     self._ready_total_time = None
-                elif not msg.startswith("Auto Accept:"):
+                elif msg.startswith("Lock In: Waiting"):
+                    match = re.search(r"Waiting ([\d.]+)s", msg)
+                    if match:
+                        self._lock_total_time = float(match.group(1))
+                        self.bar_action_progress.set(0)
+                        self.bar_action_progress.configure(progress_color=get_color("colors.accent.purple"))
+                        self.bar_action_progress.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(0, TOKENS.get("spacing.sm")))
+                elif msg.startswith("Lock In:") and "s before locking" in msg and getattr(self, "_lock_total_time", None):
+                    match = re.search(r"Lock In: (\d+)s", msg)
+                    if match:
+                        remaining = float(match.group(1))
+                        progress = max(0.0, min(1.0, (self._lock_total_time - remaining) / self._lock_total_time))
+                        self.bar_action_progress.set(progress)
+                elif msg == "Lock In: Locked!":
+                    self.bar_action_progress.set(1.0)
+                    self.bar_action_progress.configure(progress_color=get_color("colors.state.success"))
+                    self.after(2000, lambda: self.bar_action_progress.pack_forget())
+                    self._lock_total_time = None
+                elif not msg.startswith("Auto Accept:") and not msg.startswith("Lock In:"):
                     self.bar_action_progress.pack_forget()
                     self._ready_total_time = None
+                    self._lock_total_time = None
 
                 text = msg
                 if len(text) > 30:
