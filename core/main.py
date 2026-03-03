@@ -554,6 +554,14 @@ class LeagueAgentApp(ctk.CTk):
         )
         self.lbl_action.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(0, TOKENS.get("spacing.xs")))
 
+        # Malcolm: UX-enhanced Matchmaking Progress Flair
+        self.bar_action_progress = ctk.CTkProgressBar(
+            footer, height=4, fg_color=get_color("colors.background.panel"), progress_color=get_color("colors.accent.gold")
+        )
+        self.bar_action_progress.set(0)
+        self.bar_action_progress.pack_forget()
+        self._ready_total_time = None
+
         self._precompute_animation()
 
     def _precompute_animation(self):
@@ -721,6 +729,32 @@ class LeagueAgentApp(ctk.CTk):
             try:
                 if not self.winfo_exists() or not getattr(self, "lbl_action", None) or not self.lbl_action.winfo_exists():
                     return
+
+                # Malcolm: UX-enhanced Matchmaking Progress Flair
+                if msg.startswith("Auto Accept: Waiting"):
+                    import re
+                    match = re.search(r"Waiting ([\d.]+)s", msg)
+                    if match:
+                        self._ready_total_time = float(match.group(1))
+                        self.bar_action_progress.set(0)
+                        self.bar_action_progress.configure(progress_color=get_color("colors.accent.gold"))
+                        self.bar_action_progress.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(0, TOKENS.get("spacing.sm")))
+                elif msg.startswith("Auto Accept:") and "s..." in msg and getattr(self, "_ready_total_time", None):
+                    import re
+                    match = re.search(r"Auto Accept: (\d+)s", msg)
+                    if match:
+                        remaining = float(match.group(1))
+                        progress = max(0.0, min(1.0, (self._ready_total_time - remaining) / self._ready_total_time))
+                        self.bar_action_progress.set(progress)
+                elif msg == "Auto Accept: Accepted!":
+                    self.bar_action_progress.set(1.0)
+                    self.bar_action_progress.configure(progress_color=get_color("colors.state.success"))
+                    self.after(2000, lambda: self.bar_action_progress.pack_forget())
+                    self._ready_total_time = None
+                elif not msg.startswith("Auto Accept:"):
+                    self.bar_action_progress.pack_forget()
+                    self._ready_total_time = None
+
                 text = msg
                 if len(text) > 30:
                     text = text[:27] + "..."
