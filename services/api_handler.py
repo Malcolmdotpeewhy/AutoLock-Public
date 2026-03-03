@@ -10,12 +10,8 @@ from typing import Dict, Optional
 
 import psutil
 import requests
-import urllib3
 
 from utils.logger import Logger
-
-# Disable SSL warnings for LCU (self-signed cert)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class LCUClient:

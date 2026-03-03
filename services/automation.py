@@ -762,6 +762,7 @@ class AutomationEngine:
             # These pseudo-champions need direct PATCH with completed:true
             if cid < 0 and is_turn:
                 self._log(f"[Bravery Mode] Attempting to select with ID: {cid}")
+                self._log("Lock In: Locked!")
                 r = self.lcu.action_champ_select(action["id"], cid, complete=True)
                 if r and r.status_code in (200, 204):
                     self._log(
@@ -783,6 +784,7 @@ class AutomationEngine:
 
                 if is_instant and is_turn:
                     # Lock immediately
+                    self._log("Lock In: Locked!")
                     r = self.lcu.action_champ_select(action["id"], cid, complete=True)
                     if r and r.status_code in (200, 204):
                         self._log(f"Instant Lock: {pname}")
@@ -796,7 +798,7 @@ class AutomationEngine:
                 self.pick_hover_time = time.time()
 
                 if self.config.get("auto_lock_in", True):
-                    self._log(f"Hovering {pname} - will lock in {self.pick_delay}s")
+                    self._log(f"Lock In: Waiting {self.pick_delay}s... (Hovering {pname})")
                 else:
                     self._log(f"Hovering {pname} (Auto-Lock Disabled)")
                 return  # Wait for next cycle
@@ -811,11 +813,12 @@ class AutomationEngine:
                 remaining = self.pick_delay - elapsed
                 # Only log every few seconds to reduce spam
                 if int(remaining) % 3 == 0 and self.config.get("auto_lock_in", True):
-                    self._log(f"Waiting {remaining:.0f}s before locking {pname}...")
+                    self._log(f"Lock In: {remaining:.0f}s before locking {pname}...")
                 return  # Keep waiting
 
             # Lock In Check
             if self.config.get("auto_lock_in", True):
+                self._log("Lock In: Locked!")
                 r = self.lcu.action_champ_select(action["id"], cid, complete=True)
                 if r and r.status_code in (200, 204):
                     self._log(f"Auto Picked & Locked: {pname}")

@@ -87,12 +87,28 @@ class DraggableList(ctk.CTkScrollableFrame):
             lbl_drag.bind("<Button-1>", lambda e, x=item, idx=i: self._on_drag_start(e, x, idx))
             lbl_drag.bind("<ButtonRelease-1>", self._on_drag_release)
 
+    def _flash_success(self, frame_index):
+        """Briefly flash a row's background to indicate successful reordering."""
+        try:
+            if 0 <= frame_index < len(self._row_frames):
+                frame = self._row_frames[frame_index]
+                if frame.winfo_exists():
+                    original_color = frame.cget("fg_color")
+                    # Flash with a subtle success color/highlight
+                    frame.configure(fg_color="#2A3A2C") # Subtle green hint
+                    # Fade back to original after 300ms
+                    self.after(300, lambda: frame.configure(fg_color=original_color) if frame.winfo_exists() else None)
+        except Exception:
+            pass
+
     def _move_item(self, index, offset):
         if 0 <= index + offset < len(self.items):
             item = self.items.pop(index)
-            self.items.insert(index + offset, item)
+            new_idx = index + offset
+            self.items.insert(new_idx, item)
             self.on_reorder(self.items)
             self.render()
+            self._flash_success(new_idx)
 
     def _do_remove(self, item):
         self.on_remove(item)
@@ -118,6 +134,7 @@ class DraggableList(ctk.CTkScrollableFrame):
                 self.items.insert(new_idx, item)
                 self.on_reorder(self.items)
                 self.render()
+                self._flash_success(new_idx)
                 
         self._drag_data = {"y": 0, "item": None, "index": -1}
 

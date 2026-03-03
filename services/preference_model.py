@@ -1,7 +1,6 @@
 import time
 import math
 import json
-import os
 
 # Constants for mathematical model
 PICK_WEIGHT = 5.0

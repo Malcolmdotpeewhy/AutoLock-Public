@@ -1,6 +1,9 @@
 import unittest
 import time
-from unittest.mock import MagicMock
+import os
+import json
+import tempfile
+from unittest.mock import MagicMock, patch
 from services.preference_model import PreferenceModel, PICK_WEIGHT, BENCH_WEIGHT
 
 class TestPreferenceModel(unittest.TestCase):
@@ -77,6 +80,78 @@ class TestPreferenceModel(unittest.TestCase):
         decayed_score = self.model.get_champion_data("Annie")["score"]
         
         self.assertLess(decayed_score, initial_score)
+
+    def test_import_data_success(self):
+        valid_data = {
+            "enabled": True,
+            "matches_tracked": 10,
+            "champions": {
+                "LeeSin": {"score": 10.5}
+            }
+        }
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as f:
+            json.dump(valid_data, f)
+            temp_path = f.name
+
+        try:
+            result = self.model.import_data(temp_path)
+            self.assertTrue(result)
+            self.assertEqual(self.model.state["matches_tracked"], 10)
+            self.assertIn("LeeSin", self.model.state["champions"])
+            self.mock_config.set.assert_called_with("experimental_profile", self.model.state)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_import_data_invalid_content(self):
+        invalid_data = {"wrong_key": "data"}
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as f:
+            json.dump(invalid_data, f)
+            temp_path = f.name
+
+        initial_state = self.model.state.copy()
+        try:
+            result = self.model.import_data(temp_path)
+            self.assertFalse(result)
+            self.assertEqual(self.model.state, initial_state)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_import_data_file_not_found(self):
+        result = self.model.import_data("non_existent_file.json")
+        self.assertFalse(result)
+
+    def test_import_data_json_decode_error(self):
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as f:
+            f.write("invalid json content")
+            temp_path = f.name
+
+        try:
+            result = self.model.import_data(temp_path)
+            self.assertFalse(result)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_export_data_success(self):
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as f:
+            temp_path = f.name
+
+        try:
+            result = self.model.export_data(temp_path)
+            self.assertTrue(result)
+            with open(temp_path, 'r', encoding='utf-8') as f:
+                exported_data = json.load(f)
+            self.assertEqual(exported_data, self.model.state)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_export_data_error(self):
+        with patch("builtins.open", side_effect=OSError("Access Denied")):
+            result = self.model.export_data("some_path.json")
+            self.assertFalse(result)
 
 if __name__ == '__main__':
     unittest.main()
