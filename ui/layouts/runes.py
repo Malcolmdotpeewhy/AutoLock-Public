@@ -1083,19 +1083,17 @@ class RunePageBuilder(ctk.CTkFrame):
         # Flatten rune_data to ID map?
         # Or inefficient search
 
-        # Build map first?
-        # Helper:
-        def get_rune_name(rid):
-            for t in self.rune_data:
-                for s in t["slots"]:
-                    for r in s["runes"]:
-                        if r["id"] == rid:
-                            return r["name"]
-            return "?"
+        # Pre-calculate rune name map for efficiency (O(1) lookup vs O(N^3))
+        rune_map = {
+            r["id"]: r["name"]
+            for t in self.rune_data
+            for s in t["slots"]
+            for r in s["runes"]
+        }
 
         for slot_idx in sorted(selections.keys()):
             rid = selections[slot_idx]
-            name = get_rune_name(rid)
+            name = rune_map.get(rid, "?")
             ctk.CTkLabel(
                 parent,
                 text=f"• {name}",
