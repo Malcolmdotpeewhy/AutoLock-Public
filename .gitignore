@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.spec.bak
+
+# Logs & runtime
+*.log
+crash_log.txt
+build_log.txt
+runtime.log
+debug.log
+app.lock
+
+# Cache
+cache/
+.pytest_cache/
+
+# Sensitive / local config
+.env
+config.json
+
+# OS
+.DS_Store
+Thumbs.db

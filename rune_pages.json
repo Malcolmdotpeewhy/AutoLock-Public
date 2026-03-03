@@ -1,0 +1,19 @@
+[
+    {
+        "name": "fizz",
+        "primaryStyleId": 8200,
+        "subStyleId": 8300,
+        "selectedPerkIds": [
+            8230,
+            8275,
+            8234,
+            8232,
+            8321,
+            8410,
+            5008,
+            5008,
+            5011
+        ],
+        "current": true
+    }
+]

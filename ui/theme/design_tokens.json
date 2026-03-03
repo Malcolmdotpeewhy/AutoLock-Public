@@ -1,0 +1,167 @@
+{
+    "brand": {
+        "name": "AutoLock",
+        "identity": "arcane_tech"
+    },
+    "colors": {
+        "background": {
+            "app": "#0A0F14",
+            "panel": "#0E141B",
+            "card": "#111A23",
+            "overlay": "rgba(0,0,0,0.6)"
+        },
+        "text": {
+            "primary": "#E6F1FF",
+            "secondary": "#9FB3C8",
+            "muted": "#6B7C8F",
+            "disabled": "#3A4654"
+        },
+        "accent": {
+            "primary": "#C8A45D",
+            "gold": "#C8A45D",
+            "blue": "#3FA9F5",
+            "green": "#2ECC71",
+            "red": "#E74C3C",
+            "purple": "#9B59B6"
+        },
+        "state": {
+            "success": "#2ECC71",
+            "warning": "#F1C40F",
+            "danger": "#E74C3C",
+            "info": "#3498DB",
+            "hover": "#1C2630"
+        }
+    },
+    "gradients": {
+        "panel": [
+            "#0E141B",
+            "#0A0F14"
+        ],
+        "card": [
+            "#141E28",
+            "#0E141B"
+        ],
+        "header": [
+            "#111A23",
+            "#0A0F14"
+        ],
+        "gold_glow": [
+            "#C8A45D33",
+            "#00000000"
+        ],
+        "blue_glow": [
+            "#3FA9F533",
+            "#00000000"
+        ]
+    },
+    "elevation": {
+        "level0": {
+            "shadow": "none",
+            "blur": 0
+        },
+        "level1": {
+            "shadow": "0 2px 6px rgba(0,0,0,0.4)",
+            "blur": 6
+        },
+        "level2": {
+            "shadow": "0 6px 16px rgba(0,0,0,0.45)",
+            "blur": 12
+        },
+        "level3": {
+            "shadow": "0 10px 28px rgba(0,0,0,0.5)",
+            "blur": 18
+        },
+        "level4": {
+            "shadow": "0 16px 40px rgba(0,0,0,0.6)",
+            "blur": 26
+        }
+    },
+    "radius": {
+        "xs": 4,
+        "sm": 6,
+        "md": 10,
+        "lg": 14,
+        "xl": 18,
+        "pill": 999
+    },
+    "spacing": {
+        "xs": 4,
+        "sm": 8,
+        "md": 12,
+        "lg": 16,
+        "xl": 24,
+        "xxl": 32
+    },
+    "borders": {
+        "subtle": "1px solid rgba(255,255,255,0.04)",
+        "soft": "1px solid rgba(255,255,255,0.08)",
+        "strong": "1px solid rgba(255,255,255,0.14)",
+        "gold": "1px solid rgba(200,164,93,0.5)"
+    },
+    "buttons": {
+        "primary": {
+            "bg": "#2ECC71",
+            "text": "#0A0F14",
+            "hover": "#27AE60",
+            "glow": "0 0 12px rgba(46,204,113,0.6)"
+        },
+        "secondary": {
+            "bg": "#1C2630",
+            "text": "#E6F1FF",
+            "hover": "#243140",
+            "glow": "0 0 10px rgba(63,169,245,0.4)"
+        },
+        "danger": {
+            "bg": "#E74C3C",
+            "text": "#FFFFFF",
+            "hover": "#C0392B",
+            "glow": "0 0 12px rgba(231,76,60,0.6)"
+        },
+        "ghost": {
+            "bg": "transparent",
+            "text": "#9FB3C8",
+            "hover": "#2A2A2D"
+        }
+    },
+    "animations": {
+        "hover": {
+            "scale": 1.02,
+            "duration": 120
+        },
+        "press": {
+            "scale": 0.97,
+            "duration": 80
+        },
+        "float": {
+            "offset": 4,
+            "duration": 200
+        },
+        "fade": {
+            "duration": 160
+        },
+        "card_float": {
+            "lift_px": 2,
+            "duration": 150,
+            "border_glow": "#C8A45D40"
+        },
+        "focus_ring": {
+            "color": "#3FA9F5",
+            "width": 2,
+            "duration": 100
+        }
+    },
+    "icons": {
+        "style": "glyph_glow",
+        "glow_color": "#C8A45D",
+        "glow_intensity": 0.6
+    },
+    "typography": {
+        "font_primary": "Inter",
+        "font_secondary": "Cinzel",
+        "weights": {
+            "regular": 400,
+            "medium": 500,
+            "bold": 700
+        }
+    }
+}

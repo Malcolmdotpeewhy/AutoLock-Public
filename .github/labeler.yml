@@ -1,0 +1,16 @@
+# Basic labeler configuration
+core:
+  - core/**/*
+ui:
+  - ui/**/*
+services:
+  - services/**/*
+tests:
+  - tests/**/*
+scripts:
+  - scripts/**/*
+docs:
+  - docs/**/*
+  - README.md
+  - AGENTS.md
+  - PROJECT_MEMORY.md

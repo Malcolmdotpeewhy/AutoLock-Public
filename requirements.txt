@@ -1,0 +1,8 @@
+customtkinter
+psutil
+requests
+pillow
+pywin32
+lcu-driver
+websocket-client
+urllib3
