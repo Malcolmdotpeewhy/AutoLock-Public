@@ -348,6 +348,15 @@ class MainDashboard(ctk.CTkFrame):
 
         self._add_toggle_compact(
             a_grid,
+            "Auto Accept",
+            "auto_accept",
+            side="left",
+            padx=(0, 20),
+            tooltip_text="Automatically accepts the matchmaking queue pop.",
+        )
+
+        self._add_toggle_compact(
+            a_grid,
             "Auto Lock In",
             "auto_lock_in",
             side="left",
