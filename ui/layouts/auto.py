@@ -1538,10 +1538,22 @@ class RunePageSelector(ctk.CTkFrame):
         self.entry = make_input(
             self.header,
             placeholder="Search Rune Page...",
-            width=300,
+            width=240,
         )
-        self.entry.pack(side="left", padx=TOKENS.get("spacing.lg"), pady=TOKENS.get("spacing.sm"))
+        self.entry.pack(side="left", padx=(TOKENS.get("spacing.lg"), TOKENS.get("spacing.sm")), pady=TOKENS.get("spacing.sm"))
         self.entry.bind("<KeyRelease>", self.filter_pages)
+
+        # 🔮 Malcolm's UX Enhancement: Predictive Hint
+        self.lbl_predictive_hint = ctk.CTkLabel(
+            self.header,
+            text="",
+            font=get_font("body", "bold"),
+            text_color=get_color("colors.accent.gold")
+        )
+        self.lbl_predictive_hint.pack(side="left", padx=(0, TOKENS.get("spacing.sm")))
+
+        # 🔮 Malcolm's UX Enhancement: Enter-to-Lock
+        self.entry.bind("<Return>", self._on_enter)
 
         make_button(
             self.header,
@@ -1558,6 +1570,11 @@ class RunePageSelector(ctk.CTkFrame):
         self.load_pages()
         self.after(50, self.entry.focus_set)
 
+    def _on_enter(self, event=None):
+        # 🔮 Malcolm's UX Enhancement: Enter-to-Lock
+        if hasattr(self, "_first_match") and self._first_match:
+            self.on_select(self._first_match)
+
     def load_pages(self, query=""):
         """Load rune pages."""
         for w in self.scroll.winfo_children():
@@ -1572,17 +1589,37 @@ class RunePageSelector(ctk.CTkFrame):
         ).pack(fill="x", pady=2)
 
         query = query.lower()
+
+        first_match = None
+
         for p in self.pages:
             if query and query not in p.lower():
                 continue
 
-            make_button(
+            btn = make_button(
                 self.scroll,
                 text=p,
                 fg_color=get_color("colors.background.card"),
                 hover_color=get_color("colors.accent.primary"),
                 command=lambda n=p: self.on_select(n),
-            ).pack(fill="x", pady=2)
+            )
+
+            if first_match is None:
+                first_match = p
+                # Visually highlight the predictive hint match
+                btn.configure(border_width=2, border_color=get_color("colors.accent.gold"))
+
+            btn.pack(fill="x", pady=2)
+
+        self._first_match = first_match
+
+        # Update hint
+        if query and first_match:
+            self.lbl_predictive_hint.configure(text=f"↵  Press Enter to lock {first_match}")
+        elif query and not first_match:
+            self.lbl_predictive_hint.configure(text="No matches found.")
+        else:
+            self.lbl_predictive_hint.configure(text="")
 
     def filter_pages(self, event=None):
         """Filter rune pages."""
