@@ -753,6 +753,13 @@ class LeagueAgentApp(ctk.CTk):
                     self.bar_action_progress.configure(progress_color=get_color("colors.state.success"))
                     self.after(2000, lambda: self.bar_action_progress.pack_forget())
                     self._ready_total_time = None
+                    if hasattr(self, "toast_manager") and self.toast_manager:
+                        self.toast_manager.show_toast(
+                            "Match Accepted",
+                            "Get ready for Champ Select!",
+                            type="success",
+                            duration=3500
+                        )
                 elif msg.startswith("Lock In: Waiting"):
                     match = re.search(r"Waiting ([\d.]+)s", msg)
                     if match:
@@ -771,6 +778,13 @@ class LeagueAgentApp(ctk.CTk):
                     self.bar_action_progress.configure(progress_color=get_color("colors.state.success"))
                     self.after(2000, lambda: self.bar_action_progress.pack_forget())
                     self._lock_total_time = None
+                    if hasattr(self, "toast_manager") and self.toast_manager:
+                        self.toast_manager.show_toast(
+                            "Champion Locked",
+                            "Your pick has been locked in.",
+                            type="success",
+                            duration=3500
+                        )
                 elif not msg.startswith("Auto Accept:") and not msg.startswith("Lock In:"):
                     self.bar_action_progress.pack_forget()
                     self._ready_total_time = None
