@@ -417,6 +417,11 @@ class LeagueAgentApp(ctk.CTk):
         # Select Start View
         self.switch_view("dashboard")  # Changed to switch_view
 
+    def _on_action_progress(self, text, elapsed, total):
+        """Routes action progress updates from the engine to the UI thread."""
+        if "dashboard" in self.views and hasattr(self.views["dashboard"], "update_action_progress"):
+            self.after(0, lambda: self.views["dashboard"].update_action_progress(text, elapsed, total))
+
     def init_automation(self):
         """Initialize the Automation Engine."""
         # Pass our UI logger
@@ -428,6 +433,7 @@ class LeagueAgentApp(ctk.CTk):
             stop_func=lambda: self.after(
                 0, lambda: self.toggle_power(force_state=False)
             ),  # Verify thread safety
+            progress_callback=self._on_action_progress,
         )
         self.automation.start(start_paused=True)
 

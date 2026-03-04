@@ -26,12 +26,14 @@ class AutomationEngine:
         config: ConfigManager,
         log_func=None,
         stop_func=None,
+        progress_callback=None,
     ):
         self.lcu = lcu
         self.assets = assets
         self.config = config
         self.log = log_func
         self.stop_func = stop_func  # Callback to disable system
+        self.progress_callback = progress_callback
         self.running = False
         self.paused = False
         self.thread = None
@@ -269,6 +271,8 @@ class AutomationEngine:
             self.ready_check_delay = None
             self.ready_check_accepted = False
             self._last_countdown_log = None
+            if self.progress_callback:
+                self.progress_callback(None, 0, 0)
             return
 
         if not self.config.get("auto_accept"):
@@ -303,6 +307,8 @@ class AutomationEngine:
             self.lcu.request("POST", "/lol-matchmaking/v1/ready-check/accept")
             self.ready_check_accepted = True
             self._log("Auto Accept: Accepted!")
+            if self.progress_callback:
+                self.progress_callback(None, 0, 0)
         else:
             # Countdown Log
             remaining = target_delay - elapsed
@@ -310,6 +316,9 @@ class AutomationEngine:
             if current_ceil != self._last_countdown_log and current_ceil > 0:
                 self._log(f"Auto Accept: {current_ceil}s...")
                 self._last_countdown_log = current_ceil
+
+            if self.progress_callback and target_delay > 0:
+                self.progress_callback("Match Found: Auto-Accepting...", elapsed, target_delay)
 
     def _handle_auto_queue(self, phase, search_data=None):
         if not self.config.get("auto_requeue"):
@@ -395,6 +404,8 @@ class AutomationEngine:
             self.pick_hover_cid = None  # Reset pick state on exit/dodge
             self.pick_hover_time = None
             self._last_pick_ban_log = None  # Reset so next game logs fresh
+            if self.progress_callback:
+                self.progress_callback(None, 0, 0)
             return
 
         # Get Session
@@ -814,6 +825,9 @@ class AutomationEngine:
                 # Only log every few seconds to reduce spam
                 if int(remaining) % 3 == 0 and self.config.get("auto_lock_in", True):
                     self._log(f"Lock In: {remaining:.0f}s before locking {pname}...")
+
+                if self.progress_callback and self.pick_delay > 0 and self.config.get("auto_lock_in", True):
+                    self.progress_callback(f"Locking in {pname}...", elapsed, self.pick_delay)
                 return  # Keep waiting
 
             # Lock In Check
@@ -824,6 +838,8 @@ class AutomationEngine:
                     self._log(f"Auto Picked & Locked: {pname}")
                     self.pick_hover_cid = None  # Reset for next game
                     self.pick_hover_time = None
+                    if self.progress_callback:
+                        self.progress_callback(None, 0, 0)
                     return
                 else:
                     self._log(

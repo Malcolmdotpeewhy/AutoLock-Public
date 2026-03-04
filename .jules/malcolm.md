@@ -10,3 +10,6 @@
 ## 2026-03-03 - [Visual Drag & Drop Feedback]
 **Learning:** Converting an invisible drag operation (reordering a list by moving a mouse blindly) into a visual drag-and-drop interaction (where a semi-transparent copy of the item follows the cursor) transforms a clunky utility into a premium, responsive experience. Visual feedback during a physical interaction drastically reduces cognitive load.
 **Action:** When implementing any drag-and-drop or reordering interfaces, always ensure there is an immediate, dynamic visual representation of the dragged item following the pointer, and distinct visual feedback (like dimming) for the original source location.
+## 2026-03-04 - [Thread-Safe Progress Bar Updates]
+**Learning:** When passing callbacks from background engine threads (like `AutomationEngine`) to update CustomTkinter UI components, direct UI modification can cause crashes. It's critical to route these updates through `self.after(0, ...)` in the main application class.
+**Action:** When adding any new background-to-UI callback, ensure the receiving UI method wraps the execution in a `self.after()` block to guarantee thread safety.

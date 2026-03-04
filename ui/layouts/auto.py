@@ -121,11 +121,64 @@ class MainDashboard(ctk.CTkFrame):
             self.content, height=1, fg_color=get_color("colors.accent.gold"), # Matched to header
         ).pack(fill="x", pady=(0, TOKENS.get("spacing.lg")))
 
+        # --- 🔮 Malcolm: Action Progress Bar for Delays ---
+        self.action_progress_frame = make_panel(self.content, title=None)
+
+        # We don't pack it yet. It stays hidden until needed.
+
+        row = ctk.CTkFrame(self.action_progress_frame._content, fg_color="transparent")
+        row.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=TOKENS.get("spacing.sm"))
+
+        # Loading spinner mock (just a cool icon)
+        ctk.CTkLabel(
+            row, text="⏳", font=("Arial", 18), text_color=get_color("colors.accent.gold")
+        ).pack(side="left", padx=(0, TOKENS.get("spacing.sm")))
+
+        self.lbl_action_progress = ctk.CTkLabel(
+            row, text="Waiting...", font=get_font("body", "bold"), text_color=get_color("colors.accent.primary")
+        )
+        self.lbl_action_progress.pack(side="left")
+
+        self.bar_action_progress = ctk.CTkProgressBar(
+            self.action_progress_frame._content,
+            height=4,
+            corner_radius=2,
+            fg_color=get_color("colors.background.app"),
+            progress_color=get_color("colors.accent.primary")
+        )
+        self.bar_action_progress.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(0, TOKENS.get("spacing.md")))
+        self.bar_action_progress.set(0)
+
         # Init Dashboard Widgets
         self._init_dashboard_ui()
 
         # Start Rank Poller
         self.update_rank_display()
+
+    def update_action_progress(self, text, elapsed, total):
+        """Update the visual action progress bar."""
+        try:
+            if not getattr(self, "winfo_exists", lambda: False)(): return
+
+            if text is None:
+                if getattr(self, "_action_progress_visible", False):
+                    self.action_progress_frame.pack_forget()
+                    self._action_progress_visible = False
+                return
+
+            if not getattr(self, "_action_progress_visible", False):
+                # Insert before frame_queue
+                self.action_progress_frame.pack(before=self.frame_queue, fill="x", pady=(0, TOKENS.get("spacing.lg")))
+                self._action_progress_visible = True
+
+            remaining = max(0, total - elapsed)
+            self.lbl_action_progress.configure(text=f"{text} ({remaining:.1f}s)")
+
+            progress_val = elapsed / total if total > 0 else 1.0
+            self.bar_action_progress.set(min(1.0, progress_val))
+        except Exception as e:
+            from utils.logger import Logger
+            Logger.error("UI", f"Error updating action progress: {e}")
 
     def update_rank_display(self):
         """Polls rank and session stats."""
