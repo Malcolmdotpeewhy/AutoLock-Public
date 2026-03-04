@@ -12,8 +12,9 @@ class ToastNotification(ctk.CTkFrame):
                          border_width=1, border_color=parse_border("subtle")[1], **kwargs)
 
         self.duration = duration
-        self.start_time = time.time()
+        self.remaining = duration
         self.is_dismissed = False
+        self.is_paused = False
         self.on_dismiss = on_dismiss
         self._progress_job = None
 
@@ -65,19 +66,35 @@ class ToastNotification(ctk.CTkFrame):
         lbl_title.bind("<Button-1>", lambda e: self.dismiss())
         lbl_msg.bind("<Button-1>", lambda e: self.dismiss())
 
+        # 🔮 Malcolm's UX Enhancement: Pause on Hover
+        # Prevents toasts from disappearing while the user is actively reading them,
+        # greatly improving accessibility and reducing cognitive load.
+        def _on_enter(e):
+            self.is_paused = True
+        def _on_leave(e):
+            self.is_paused = False
+
+        self.bind("<Enter>", _on_enter)
+        self.bind("<Leave>", _on_leave)
+
+        # Bind to all immediate children to prevent flickering when hovering over text
+        for child in self.winfo_children():
+            child.bind("<Enter>", _on_enter, add="+")
+            child.bind("<Leave>", _on_leave, add="+")
+
         self._update_progress()
 
     def _update_progress(self):
         if self.is_dismissed:
             return
 
-        elapsed = (time.time() - self.start_time) * 1000
-        remaining = self.duration - elapsed
+        if not self.is_paused:
+            self.remaining -= 30
 
-        if remaining <= 0:
+        if self.remaining <= 0:
             self.dismiss()
         else:
-            self.progress.set(remaining / self.duration)
+            self.progress.set(self.remaining / self.duration)
             self._progress_job = self.after(30, self._update_progress)
 
     def dismiss(self):
@@ -86,9 +103,32 @@ class ToastNotification(ctk.CTkFrame):
         self.is_dismissed = True
         if self._progress_job:
             self.after_cancel(self._progress_job)
+            self._progress_job = None
+
+        # Notify manager to remove from active list and reposition others
         if self.on_dismiss:
             self.on_dismiss(self)
-        self.destroy()
+
+        # 🔮 Malcolm's UX Enhancement: Smooth Exit Animation
+        self._animate_out()
+
+    def _animate_out(self):
+        try:
+            current_relx = float(self.place_info().get('relx', 0.98))
+        except Exception:
+            self.destroy()
+            return
+
+        def step():
+            nonlocal current_relx
+            if not self.winfo_exists(): return
+            current_relx += 0.02
+            if current_relx >= 1.2:
+                self.destroy()
+            else:
+                self.place_configure(relx=current_relx)
+                self.after(16, step)
+        step()
 
 class ToastManager:
     """Manages stacked toast notifications overlaid on the app."""

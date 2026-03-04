@@ -10,3 +10,6 @@
 ## 2026-03-03 - [Visual Drag & Drop Feedback]
 **Learning:** Converting an invisible drag operation (reordering a list by moving a mouse blindly) into a visual drag-and-drop interaction (where a semi-transparent copy of the item follows the cursor) transforms a clunky utility into a premium, responsive experience. Visual feedback during a physical interaction drastically reduces cognitive load.
 **Action:** When implementing any drag-and-drop or reordering interfaces, always ensure there is an immediate, dynamic visual representation of the dragged item following the pointer, and distinct visual feedback (like dimming) for the original source location.
+## 2024-03-04 - Ephemeral UI Pause-on-Hover
+**Learning:** Adding pause-on-hover to sliding toast notifications drastically reduces cognitive load for users. Without it, ephemeral UI creates reading anxiety.
+**Action:** Always implement a pause mechanism on ephemeral, auto-dismissing notifications to improve accessibility and user control. Pair with a smooth exit animation to ensure the departure doesn't feel jarring.
