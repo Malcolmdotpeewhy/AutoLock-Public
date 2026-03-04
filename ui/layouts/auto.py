@@ -332,6 +332,16 @@ class MainDashboard(ctk.CTkFrame):
         self.frame_auto = make_panel(self.content, title="Automation & Loop", collapsible=True, start_collapsed=True)
         self.frame_auto.pack(fill="x", pady=(0, TOKENS.get("spacing.xl")), ipady=TOKENS.get("spacing.sm"))
 
+        # 🌟 Nova: Quick Presets Row
+        p_row = ctk.CTkFrame(self.frame_auto._content, fg_color="transparent")
+        p_row.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(TOKENS.get("spacing.xs"), TOKENS.get("spacing.sm")))
+
+        ctk.CTkLabel(p_row, text="Quick Presets:", font=get_font("body"), text_color=get_color("colors.text.secondary")).pack(side="left", padx=(0, TOKENS.get("spacing.sm")))
+
+        make_button(p_row, text="⚡ Tryhard", width=90, height=24, font=get_font("caption"), command=lambda: self._apply_preset("tryhard")).pack(side="left", padx=(0, 4))
+        make_button(p_row, text="☕ Coffee Break", width=110, height=24, font=get_font("caption"), command=lambda: self._apply_preset("coffee")).pack(side="left", padx=(0, 4))
+        make_button(p_row, text="🛡️ Standard", width=90, height=24, font=get_font("caption"), command=lambda: self._apply_preset("standard")).pack(side="left", padx=(0, 4))
+
         # Toggles Grid
         a_grid = ctk.CTkFrame(self.frame_auto._content, fg_color="transparent")
         a_grid.pack(fill="x", padx=TOKENS.get("spacing.md"), pady=(TOKENS.get("spacing.xs"), TOKENS.get("spacing.md")))
@@ -502,6 +512,65 @@ class MainDashboard(ctk.CTkFrame):
         )
 
         self.switch_game_mode("SUMMONER'S RIFT")
+
+    def _animate_slider(self, slider, current_val, target_val, steps=15, current_step=0, callback=None, anim_id=None):
+        """Animates a CTkSlider to a target value smoothly."""
+        if not getattr(slider, "winfo_exists", lambda: False)():
+            return
+
+        if not hasattr(self, "_slider_anims"):
+            self._slider_anims = {}
+
+        if not hasattr(self, "_anim_counter"):
+            self._anim_counter = 0
+
+        if current_step == 0:
+            self._anim_counter += 1
+            anim_id = self._anim_counter
+            self._slider_anims[slider] = anim_id
+
+        if self._slider_anims.get(slider) != anim_id:
+            return
+
+        if current_step >= steps:
+            slider.set(target_val)
+            if callback:
+                callback(target_val)
+            return
+
+        t = current_step / steps
+        val = current_val + (target_val - current_val) * (t * (2 - t))
+
+        slider.set(val)
+
+        self.after(20, lambda: self._animate_slider(slider, current_val, target_val, steps, current_step + 1, callback, anim_id))
+
+    def _apply_preset(self, preset_name):
+        """Applies a quick preset with animated slider transitions."""
+        tm = ToastManager.get_instance()
+
+        if preset_name == "tryhard":
+            targets = {"delay": 0.0, "poll": 0.1, "lock": 0, "msg": "Tryhard mode activated. Instant lock-in & queue pops."}
+        elif preset_name == "coffee":
+            targets = {"delay": 8.0, "poll": 1.0, "lock": 20, "msg": "Coffee Break mode activated. Maximum safety delays applied."}
+        else: # standard
+            targets = {"delay": 2.0, "poll": 0.5, "lock": 5, "msg": "Standard mode activated. Balanced delays applied."}
+
+        if hasattr(self, "var_auto_lock_in"):
+            self.var_auto_lock_in.set(True)
+            self.config.set("auto_lock_in", True)
+
+        self._animate_slider(self.slider_delay, self.slider_delay.get(), targets["delay"], callback=self._on_delay_change)
+        self._animate_slider(self.slider_poll, self.slider_poll.get(), targets["poll"], callback=self._on_poll_speed_change)
+        self._animate_slider(self.slider_lock_timing, self.slider_lock_timing.get(), targets["lock"], callback=self._on_lock_timing_change)
+
+        if tm:
+            tm.show_toast(
+                title="✨ Preset Applied",
+                message=targets["msg"],
+                type="success" if preset_name == "standard" else "info",
+                duration=3500
+            )
 
     def _on_delay_change(self, value):
         self.lbl_delay.configure(text=f"{value:.1f}s")

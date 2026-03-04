@@ -1,0 +1,3 @@
+## 2024-05-18 - Quick Presets with Animated Transitions
+**Learning:** Combining functional UI updates (like toggles and sliders) with visual, animated lerping and instant toast notifications significantly enhances user engagement and clarity, transforming a static configuration panel into a responsive, satisfying experience.
+**Action:** Always consider using animated transitions (e.g., `_animate_slider`) and localized toast feedback when building "macro" actions or quick presets that modify multiple states simultaneously, ensuring users intuitively understand the impact of their actions. Use tracking animation IDs to cancel previous conflicting animations to prevent jittery visuals.
